@@ -114,7 +114,6 @@ variable "rbac_aad_tenant_id" {
   description = "(Optional) The Tenant ID used for Azure Active Directory Application. If this isn't specified the Tenant ID of the current Subscription is used."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "tags" {
   type        = map(string)
   default     = null
@@ -127,8 +126,9 @@ variable "user_assigned_identity_name" {
   description = "(Optional) The name of the User Assigned Managed Identity to create."
 }
 
-variable "user_assigned_resource_ids" {
+variable "user_assigned_managed_identity_resource_ids" {
   type        = set(string)
   default     = []
   description = "(Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource."
+  nullable    = false
 }
