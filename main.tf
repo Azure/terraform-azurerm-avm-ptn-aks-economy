@@ -34,12 +34,12 @@ resource "azurerm_kubernetes_cluster" "this" {
   location                          = var.location
   name                              = "aks-${var.name}"
   resource_group_name               = var.resource_group_name
-  automatic_channel_upgrade         = "patch"
+  automatic_upgrade_channel         = "patch"
   azure_policy_enabled              = false
   dns_prefix                        = var.name
   kubernetes_version                = var.kubernetes_version
   local_account_disabled            = false
-  node_os_channel_upgrade           = "NodeImage"
+  node_os_upgrade_channel           = "NodeImage"
   oidc_issuer_enabled               = true
   private_cluster_enabled           = false
   role_based_access_control_enabled = true
@@ -48,17 +48,17 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_identity_enabled         = true
 
   default_node_pool {
-    name                   = "agentpool"
-    vm_size                = "Standard_D4d_v5"
-    enable_auto_scaling    = true
-    enable_host_encryption = true
-    max_count              = 9
-    max_pods               = 110
-    min_count              = 3
-    orchestrator_version   = var.orchestrator_version
-    os_sku                 = "Ubuntu"
-    tags                   = merge(var.tags, var.agents_tags)
-    vnet_subnet_id         = module.avm_res_network_virtualnetwork.subnets["subnet"].resource_id
+    name                    = "agentpool"
+    vm_size                 = "Standard_D4d_v5"
+    auto_scaling_enabled    = true
+    host_encryption_enabled = true
+    max_count               = 9
+    max_pods                = 110
+    min_count               = 3
+    orchestrator_version    = var.orchestrator_version
+    os_sku                  = "Ubuntu"
+    tags                    = merge(var.tags, var.agents_tags)
+    vnet_subnet_id          = module.avm_res_network_virtualnetwork.subnets["subnet"].resource_id
 
     upgrade_settings {
       max_surge = "10%"
@@ -67,11 +67,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   auto_scaler_profile {
     balance_similar_node_groups = true
   }
-  azure_active_directory_role_based_access_control {
-    admin_group_object_ids = var.rbac_aad_admin_group_object_ids
-    azure_rbac_enabled     = var.rbac_aad_azure_rbac_enabled
-    managed                = true
-    tenant_id              = var.rbac_aad_tenant_id
+  dynamic "azure_active_directory_role_based_access_control" {
+    for_each = var.rbac_aad_admin_group_object_ids != null || var.rbac_aad_azure_rbac_enabled != null || var.rbac_aad_tenant_id != null ? [1] : []
+
+    content {
+      admin_group_object_ids = var.rbac_aad_admin_group_object_ids
+      azure_rbac_enabled     = var.rbac_aad_azure_rbac_enabled
+      tenant_id              = var.rbac_aad_tenant_id
+    }
   }
   ## Resources that only support UserAssigned
   identity {
@@ -106,11 +109,11 @@ resource "terraform_data" "kubernetes_version_keeper" {
 
 resource "azapi_update_resource" "aks_cluster_post_create" {
   type = "Microsoft.ContainerService/managedClusters@2024-02-01"
-  body = jsonencode({
+  body = {
     properties = {
       kubernetesVersion = var.kubernetes_version
     }
-  })
+  }
   resource_id = azurerm_kubernetes_cluster.this.id
 
   lifecycle {
@@ -135,7 +138,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.this.id
   name                  = "userpool"
   vm_size               = "Standard_D2d_v5"
-  enable_auto_scaling   = true
+  auto_scaling_enabled  = true
   max_count             = 25
   min_count             = 0
   orchestrator_version  = var.orchestrator_version
@@ -148,7 +151,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
 
 module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.2.3"
+  version = "0.8.1"
 
   address_space       = [var.node_cidr]
   location            = var.location

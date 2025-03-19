@@ -46,7 +46,7 @@ DESCRIPTION
 variable "kubernetes_version" {
   type        = string
   default     = null
-  description = "(Optional) Specify which Kubernetes release to use. Specify only minor version, such as '1.28'."
+  description = "(Optional) Specify which Kubernetes release to use. Specify only minor version, such as '1.30'."
 
   validation {
     condition     = var.kubernetes_version == null || try(can(regex("^[0-9]+\\.[0-9]+$", var.kubernetes_version)), false)
@@ -82,7 +82,7 @@ variable "node_cidr" {
 variable "orchestrator_version" {
   type        = string
   default     = null
-  description = "(Optional) Specify which Kubernetes release to use. Specify only minor version, such as '1.28'."
+  description = "(Optional) Specify which Kubernetes release to use. Specify only minor version, such as '1.30'."
 
   validation {
     condition     = var.orchestrator_version == null || try(can(regex("^[0-9]+\\.[0-9]+$", var.orchestrator_version)), false)
