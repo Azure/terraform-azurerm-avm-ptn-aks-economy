@@ -67,10 +67,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   auto_scaler_profile {
     balance_similar_node_groups = true
   }
-  azure_active_directory_role_based_access_control {
-    admin_group_object_ids = var.rbac_aad_admin_group_object_ids
-    azure_rbac_enabled     = var.rbac_aad_azure_rbac_enabled
-    tenant_id              = var.rbac_aad_tenant_id
+  dynamic "azure_active_directory_role_based_access_control" {
+    for_each = var.rbac_aad_admin_group_object_ids != null || var.rbac_aad_azure_rbac_enabled != null || var.rbac_aad_tenant_id != null ? [1] : []
+
+    content {
+      admin_group_object_ids = var.rbac_aad_admin_group_object_ids
+      azure_rbac_enabled     = var.rbac_aad_azure_rbac_enabled
+      tenant_id              = var.rbac_aad_tenant_id
+    }
   }
   ## Resources that only support UserAssigned
   identity {
@@ -105,11 +109,11 @@ resource "terraform_data" "kubernetes_version_keeper" {
 
 resource "azapi_update_resource" "aks_cluster_post_create" {
   type = "Microsoft.ContainerService/managedClusters@2024-02-01"
-  body = jsonencode({
+  body = {
     properties = {
       kubernetesVersion = var.kubernetes_version
     }
-  })
+  }
   resource_id = azurerm_kubernetes_cluster.this.id
 
   lifecycle {
@@ -147,7 +151,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
 
 module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.5.0"
+  version = "0.8.1"
 
   address_space       = [var.node_cidr]
   location            = var.location
