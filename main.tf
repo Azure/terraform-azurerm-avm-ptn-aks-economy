@@ -108,13 +108,13 @@ resource "terraform_data" "kubernetes_version_keeper" {
 }
 
 resource "azapi_update_resource" "aks_cluster_post_create" {
-  type = "Microsoft.ContainerService/managedClusters@2024-02-01"
+  resource_id = azurerm_kubernetes_cluster.this.id
+  type        = "Microsoft.ContainerService/managedClusters@2024-02-01"
   body = {
     properties = {
       kubernetesVersion = var.kubernetes_version
     }
   }
-  resource_id = azurerm_kubernetes_cluster.this.id
 
   lifecycle {
     ignore_changes       = all
@@ -155,8 +155,8 @@ module "avm_res_network_virtualnetwork" {
 
   address_space       = [var.node_cidr]
   location            = var.location
-  name                = "vnet"
   resource_group_name = var.resource_group_name
+  name                = "vnet"
   subnets = {
     "subnet" = {
       name             = "nodecidr"
