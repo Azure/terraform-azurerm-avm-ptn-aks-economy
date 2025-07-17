@@ -49,7 +49,6 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   default_node_pool {
     name                    = "agentpool"
-    vm_size                 = "Standard_D4d_v5"
     auto_scaling_enabled    = true
     host_encryption_enabled = true
     max_count               = 9
@@ -58,6 +57,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     orchestrator_version    = var.orchestrator_version
     os_sku                  = "Ubuntu"
     tags                    = merge(var.tags, var.agents_tags)
+    vm_size                 = "Standard_D4d_v5"
     vnet_subnet_id          = module.avm_res_network_virtualnetwork.subnets["subnet"].resource_id
 
     upgrade_settings {
@@ -108,13 +108,13 @@ resource "terraform_data" "kubernetes_version_keeper" {
 }
 
 resource "azapi_update_resource" "aks_cluster_post_create" {
-  type = "Microsoft.ContainerService/managedClusters@2024-02-01"
+  resource_id = azurerm_kubernetes_cluster.this.id
+  type        = "Microsoft.ContainerService/managedClusters@2024-02-01"
   body = {
     properties = {
       kubernetesVersion = var.kubernetes_version
     }
   }
-  resource_id = azurerm_kubernetes_cluster.this.id
 
   lifecycle {
     ignore_changes       = all
@@ -137,13 +137,13 @@ resource "azurerm_management_lock" "this" {
 resource "azurerm_kubernetes_cluster_node_pool" "this" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.this.id
   name                  = "userpool"
-  vm_size               = "Standard_D2d_v5"
   auto_scaling_enabled  = true
   max_count             = 25
   min_count             = 0
   orchestrator_version  = var.orchestrator_version
   os_sku                = "Ubuntu"
   tags                  = var.tags
+  vm_size               = "Standard_D2d_v5"
   vnet_subnet_id        = module.avm_res_network_virtualnetwork.subnets["subnet"].resource_id
 
   depends_on = [azapi_update_resource.aks_cluster_post_create]
@@ -155,8 +155,8 @@ module "avm_res_network_virtualnetwork" {
 
   address_space       = [var.node_cidr]
   location            = var.location
-  name                = "vnet"
   resource_group_name = var.resource_group_name
+  name                = "vnet"
   subnets = {
     "subnet" = {
       name             = "nodecidr"
