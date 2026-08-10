@@ -1,4 +1,3 @@
-
 resource "random_string" "acr_suffix" {
   length  = 8
   numeric = true
@@ -64,9 +63,11 @@ resource "azurerm_kubernetes_cluster" "this" {
       max_surge = "10%"
     }
   }
+
   auto_scaler_profile {
     balance_similar_node_groups = true
   }
+
   dynamic "azure_active_directory_role_based_access_control" {
     for_each = var.rbac_aad_admin_group_object_ids != null || var.rbac_aad_azure_rbac_enabled != null || var.rbac_aad_tenant_id != null ? [1] : []
 
@@ -76,11 +77,13 @@ resource "azurerm_kubernetes_cluster" "this" {
       tenant_id              = var.rbac_aad_tenant_id
     }
   }
+
   ## Resources that only support UserAssigned
   identity {
     type         = "UserAssigned"
     identity_ids = length(var.user_assigned_managed_identity_resource_ids) > 0 ? var.user_assigned_managed_identity_resource_ids : azurerm_user_assigned_identity.aks[*].id
   }
+
   network_profile {
     network_plugin      = "azure"
     load_balancer_sku   = "standard"
@@ -124,7 +127,6 @@ resource "azapi_update_resource" "aks_cluster_post_create" {
   }
 }
 
-
 # required AVM resources interfaces
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0
@@ -134,7 +136,6 @@ resource "azurerm_management_lock" "this" {
   scope      = azurerm_kubernetes_cluster.this.id
   notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
 }
-
 
 resource "azurerm_kubernetes_cluster_node_pool" "this" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.this.id
