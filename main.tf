@@ -154,7 +154,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
 
 module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.8.1"
+  version = "0.22.1"
 
   address_space       = [var.node_cidr]
   location            = var.location
