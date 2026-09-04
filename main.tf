@@ -152,16 +152,16 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
 
 module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.8.1"
+  version = "0.22.1"
 
-  address_space       = [var.node_cidr]
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  name                = "vnet"
+  location      = var.location
+  address_space = [var.node_cidr]
+  name          = "vnet"
   subnets = {
     "subnet" = {
       name             = "nodecidr"
       address_prefixes = [var.node_cidr]
     }
   }
+  resource_group_name = var.resource_group_name
 }
