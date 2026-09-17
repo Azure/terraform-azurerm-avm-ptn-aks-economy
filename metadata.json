@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "AKS economy",
+  "moduleDescription": "AVM Pattern Module for AKS economy",
+  "canonicalType": "aks-economy",
+  "owners": [
+    "ms-henglu"
+  ],
+  "telemetryIdPrefix": "46d3xtrf.ptn.707cc40"
+}
