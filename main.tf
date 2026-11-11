@@ -150,18 +150,25 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   depends_on = [azapi_update_resource.aks_cluster_post_create]
 }
 
+data "azapi_client_config" "current" {}
+
 module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.22.2"
+  version = "0.23.0"
 
-  location      = var.location
-  address_space = [var.node_cidr]
-  name          = "vnet"
+  address_space    = [var.node_cidr]
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  name             = "vnet"
+  parent_id        = format(
+    "%s/resourceGroups/%s",
+    data.azapi_client_config.current.subscription_resource_id,
+    var.resource_group_name
+  )
   subnets = {
     "subnet" = {
       name             = "nodecidr"
       address_prefixes = [var.node_cidr]
     }
   }
-  resource_group_name = var.resource_group_name
 }
