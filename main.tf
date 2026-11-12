@@ -156,15 +156,15 @@ module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.23.0"
 
-  address_space    = [var.node_cidr]
-  enable_telemetry = var.enable_telemetry
-  location         = var.location
-  name             = "vnet"
-  parent_id        = format(
+  location = var.location
+  parent_id = format(
     "%s/resourceGroups/%s",
     data.azapi_client_config.current.subscription_resource_id,
     var.resource_group_name
   )
+  address_space    = [var.node_cidr]
+  enable_telemetry = var.enable_telemetry
+  name             = "vnet"
   subnets = {
     "subnet" = {
       name             = "nodecidr"
